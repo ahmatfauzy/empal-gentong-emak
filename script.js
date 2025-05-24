@@ -112,6 +112,9 @@ const translations = {
     "footer-contact": "Kontak",
     "footer-hours": "Jam Buka",
     "footer-hours-text": "Senin - Minggu: 08:00 - 22:00",
+
+    // Loading
+    "loading-text": "Memuat...",
   },
   en: {
     // Navigation
@@ -227,6 +230,9 @@ const translations = {
     "footer-contact": "Contact",
     "footer-hours": "Opening Hours",
     "footer-hours-text": "Monday - Sunday: 08:00 - 22:00",
+
+    // Loading
+    "loading-text": "Loading...",
   },
 };
 
@@ -242,19 +248,254 @@ const backgroundMusic = document.getElementById("backgroundMusic");
 const hamburger = document.querySelector(".hamburger");
 const navMenu = document.querySelector(".nav-menu");
 
+function createLoadingScreen() {
+  // Create loading overlay
+  const loadingOverlay = document.createElement("div");
+  loadingOverlay.id = "loadingScreen";
+  loadingOverlay.innerHTML = `
+    <div class="loading-container">
+      <div class="loading-logo">
+        <img src="items/images/logo.png" alt="Empal Gentong Emak" id="loadingLogo">
+        <div class="loading-pulse"></div>
+      </div>
+      <div class="loading-text" data-id="loading-text">Memuat...</div>
+      <div class="loading-progress">
+        <div class="loading-bar"></div>
+      </div>
+      <div class="loading-percentage">0%</div>
+    </div>
+  `;
+
+  const loadingStyles = `
+    <style id="loadingStyles">
+      #loadingScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.8s ease, visibility 0.8s ease;
+        background: var(--loading-bg);
+      }
+
+      [data-theme="light"] #loadingScreen {
+        --loading-bg: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        --loading-text-color: #333;
+        --loading-accent: #8b4513;
+        --loading-secondary: #f5f5f5;
+      }
+
+      [data-theme="dark"] #loadingScreen {
+        --loading-bg: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        --loading-text-color: #ffffff;
+        --loading-accent: #8b4513;
+        --loading-secondary: #333333;
+      }
+
+      .loading-container {
+        text-align: center;
+        max-width: 300px;
+        width: 90%;
+      }
+
+      .loading-logo {
+        position: relative;
+        margin-bottom: 30px;
+        display: inline-block;
+      }
+
+      #loadingLogo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: 50%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        animation: logoFloat 3s ease-in-out infinite alternate;
+        position: relative;
+        z-index: 2;
+      }
+
+      .loading-pulse {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 140px;
+        height: 140px;
+        border: 2px solid var(--loading-accent);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+        opacity: 0.6;
+      }
+
+      .loading-text {
+        font-size: 1.2rem;
+        color: var(--loading-text-color);
+        margin-bottom: 25px;
+        font-weight: 600;
+        animation: textFade 2s ease-in-out infinite alternate;
+      }
+
+      .loading-progress {
+        width: 100%;
+        height: 4px;
+        background: var(--loading-secondary);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 15px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .loading-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--loading-accent), #d2691e);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+        position: relative;
+      }
+
+      .loading-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shimmer 1.5s infinite;
+      }
+
+      .loading-percentage {
+        font-size: 0.9rem;
+        color: var(--loading-text-color);
+        opacity: 0.8;
+        font-weight: 500;
+      }
+
+      #loadingScreen.fade-out {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      @keyframes logoFloat {
+        0% { transform: translateY(0px) rotate(0deg); }
+        100% { transform: translateY(-10px) rotate(5deg); }
+      }
+
+      @keyframes pulse {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+        50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.3; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      }
+
+      @keyframes textFade {
+        0% { opacity: 0.7; }
+        100% { opacity: 1; }
+      }
+
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(200%); }
+      }
+
+      @media (max-width: 768px) {
+        #loadingLogo {
+          width: 100px;
+          height: 100px;
+        }
+        
+        .loading-pulse {
+          width: 120px;
+          height: 120px;
+        }
+        
+        .loading-text {
+          font-size: 1.1rem;
+        }
+      }
+    </style>
+  `;
+
+  document.head.insertAdjacentHTML("beforeend", loadingStyles);
+
+  document.body.appendChild(loadingOverlay);
+
+  return loadingOverlay;
+}
+
+function simulateLoading() {
+  const loadingBar = document.querySelector(".loading-bar");
+  const loadingPercentage = document.querySelector(".loading-percentage");
+  let progress = 0;
+
+  const interval = setInterval(() => {
+    progress += Math.random() * 15;
+    if (progress > 100) progress = 100;
+
+    loadingBar.style.width = progress + "%";
+    loadingPercentage.textContent = Math.round(progress) + "%";
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      setTimeout(hideLoadingScreen, 500);
+    }
+  }, 200);
+}
+
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById("loadingScreen");
+  const loadingStyles = document.getElementById("loadingStyles");
+
+  if (loadingScreen) {
+    loadingScreen.classList.add("fade-out");
+    setTimeout(() => {
+      loadingScreen.remove();
+      if (loadingStyles) loadingStyles.remove();
+    }, 800);
+  }
+}
+
+function updateLoadingTheme() {
+  const loadingScreen = document.getElementById("loadingScreen");
+  if (loadingScreen) {
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme") || "light";
+  }
+}
+
+function initializeLoading() {
+  const loadingOverlay = createLoadingScreen();
+
+  updateLoadingTheme();
+
+  setTimeout(() => {
+    simulateLoading();
+  }, 500);
+}
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
-  // Load saved theme
+  initializeLoading();
+
+  // Load saved theme and language
   const savedTheme = localStorage.getItem("theme") || "light";
   const savedLang = localStorage.getItem("language") || "id";
 
   setTheme(savedTheme);
   setLanguage(savedLang);
 
-  // Initialize music state - TAMBAHKAN INI
+  // Update loading screen theme
+  updateLoadingTheme();
+
+  // Initialize music state
   initializeMusicState();
 
-  // Add loading animation
+  // Add loading animation for page elements
   const elements = document.querySelectorAll(
     ".feature-card, .menu-card, .value-card, .team-member"
   );
@@ -282,6 +523,9 @@ function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
   localStorage.setItem("theme", theme);
+
+  // Update loading screen theme if it exists
+  updateLoadingTheme();
 }
 
 // Language toggle
@@ -617,4 +861,94 @@ window.addEventListener("scroll", () => {
     requestAnimationFrame(updateScrollElements);
     ticking = true;
   }
+});
+
+// Additional loading screen enhancements
+function addLoadingScreenEvents() {
+  // Handle logo image load error
+  const loadingLogo = document.getElementById("loadingLogo");
+  if (loadingLogo) {
+    loadingLogo.addEventListener("error", function () {
+      // Replace with text if image fails to load
+      this.style.display = "none";
+      const textLogo = document.createElement("div");
+      textLogo.innerHTML = "🍲";
+      textLogo.style.fontSize = "4rem";
+      textLogo.style.animation = "logoFloat 3s ease-in-out infinite alternate";
+      this.parentNode.insertBefore(textLogo, this);
+    });
+  }
+}
+
+// Enhanced loading with resource monitoring
+function enhancedLoading() {
+  let resourcesLoaded = 0;
+  let totalResources = 0;
+
+  // Count resources to load
+  const images = document.querySelectorAll("img");
+  const scripts = document.querySelectorAll("script[src]");
+  const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
+
+  totalResources = images.length + scripts.length + stylesheets.length;
+
+  if (totalResources === 0) {
+    // If no resources to load, simulate loading
+    simulateLoading();
+    return;
+  }
+
+  const updateProgress = () => {
+    resourcesLoaded++;
+    const progress = (resourcesLoaded / totalResources) * 100;
+    const loadingBar = document.querySelector(".loading-bar");
+    const loadingPercentage = document.querySelector(".loading-percentage");
+
+    if (loadingBar && loadingPercentage) {
+      loadingBar.style.width = progress + "%";
+      loadingPercentage.textContent = Math.round(progress) + "%";
+    }
+
+    if (resourcesLoaded >= totalResources) {
+      setTimeout(hideLoadingScreen, 500);
+    }
+  };
+
+  // Monitor image loading
+  images.forEach((img) => {
+    if (img.complete) {
+      updateProgress();
+    } else {
+      img.addEventListener("load", updateProgress);
+      img.addEventListener("error", updateProgress);
+    }
+  });
+
+  // Monitor script loading
+  scripts.forEach((script) => {
+    script.addEventListener("load", updateProgress);
+    script.addEventListener("error", updateProgress);
+  });
+
+  // Monitor stylesheet loading
+  stylesheets.forEach((link) => {
+    link.addEventListener("load", updateProgress);
+    link.addEventListener("error", updateProgress);
+  });
+
+  // Fallback timeout
+  setTimeout(() => {
+    if (document.getElementById("loadingScreen")) {
+      hideLoadingScreen();
+    }
+  }, 10000); // 10 second maximum loading time
+}
+
+// Initialize enhanced loading when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  addLoadingScreenEvents();
+
+  setTimeout(() => {
+    enhancedLoading();
+  }, 500);
 });
