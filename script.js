@@ -259,10 +259,6 @@ function createLoadingScreen() {
         <div class="loading-pulse"></div>
       </div>
       <div class="loading-text" data-id="loading-text">Memuat...</div>
-      <div class="loading-progress">
-        <div class="loading-bar"></div>
-      </div>
-      <div class="loading-percentage">0%</div>
     </div>
   `;
 
@@ -335,46 +331,8 @@ function createLoadingScreen() {
       .loading-text {
         font-size: 1.2rem;
         color: var(--loading-text-color);
-        margin-bottom: 25px;
         font-weight: 600;
         animation: textFade 2s ease-in-out infinite alternate;
-      }
-
-      .loading-progress {
-        width: 100%;
-        height: 4px;
-        background: var(--loading-secondary);
-        border-radius: 2px;
-        overflow: hidden;
-        margin-bottom: 15px;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-      }
-
-      .loading-bar {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, var(--loading-accent), #d2691e);
-        border-radius: 2px;
-        transition: width 0.3s ease;
-        position: relative;
-      }
-
-      .loading-bar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        animation: shimmer 1.5s infinite;
-      }
-
-      .loading-percentage {
-        font-size: 0.9rem;
-        color: var(--loading-text-color);
-        opacity: 0.8;
-        font-weight: 500;
       }
 
       #loadingScreen.fade-out {
@@ -398,11 +356,6 @@ function createLoadingScreen() {
         100% { opacity: 1; }
       }
 
-      @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(200%); }
-      }
-
       @media (max-width: 768px) {
         #loadingLogo {
           width: 100px;
@@ -422,29 +375,9 @@ function createLoadingScreen() {
   `;
 
   document.head.insertAdjacentHTML("beforeend", loadingStyles);
-
   document.body.appendChild(loadingOverlay);
 
   return loadingOverlay;
-}
-
-function simulateLoading() {
-  const loadingBar = document.querySelector(".loading-bar");
-  const loadingPercentage = document.querySelector(".loading-percentage");
-  let progress = 0;
-
-  const interval = setInterval(() => {
-    progress += Math.random() * 15;
-    if (progress > 100) progress = 100;
-
-    loadingBar.style.width = progress + "%";
-    loadingPercentage.textContent = Math.round(progress) + "%";
-
-    if (progress >= 100) {
-      clearInterval(interval);
-      setTimeout(hideLoadingScreen, 500);
-    }
-  }, 200);
 }
 
 function hideLoadingScreen() {
@@ -470,12 +403,12 @@ function updateLoadingTheme() {
 
 function initializeLoading() {
   const loadingOverlay = createLoadingScreen();
-
   updateLoadingTheme();
 
+  // Simple timeout to hide loading screen
   setTimeout(() => {
-    simulateLoading();
-  }, 500);
+    hideLoadingScreen();
+  }, 2000); // Show loading for 2 seconds
 }
 
 // Initialize
@@ -536,7 +469,8 @@ langToggle.addEventListener("click", () => {
 
 function setLanguage(lang) {
   currentLang = lang;
-  langToggle.textContent = lang === "id" ? "EN" : "ID";
+  // PERBAIKAN: Tombol menampilkan bahasa yang sedang aktif, bukan bahasa tujuan
+  langToggle.textContent = lang === "id" ? "ID" : "EN";
   document.documentElement.setAttribute("lang", lang);
 
   // Update all text elements
@@ -880,75 +814,7 @@ function addLoadingScreenEvents() {
   }
 }
 
-// Enhanced loading with resource monitoring
-function enhancedLoading() {
-  let resourcesLoaded = 0;
-  let totalResources = 0;
-
-  // Count resources to load
-  const images = document.querySelectorAll("img");
-  const scripts = document.querySelectorAll("script[src]");
-  const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
-
-  totalResources = images.length + scripts.length + stylesheets.length;
-
-  if (totalResources === 0) {
-    // If no resources to load, simulate loading
-    simulateLoading();
-    return;
-  }
-
-  const updateProgress = () => {
-    resourcesLoaded++;
-    const progress = (resourcesLoaded / totalResources) * 100;
-    const loadingBar = document.querySelector(".loading-bar");
-    const loadingPercentage = document.querySelector(".loading-percentage");
-
-    if (loadingBar && loadingPercentage) {
-      loadingBar.style.width = progress + "%";
-      loadingPercentage.textContent = Math.round(progress) + "%";
-    }
-
-    if (resourcesLoaded >= totalResources) {
-      setTimeout(hideLoadingScreen, 500);
-    }
-  };
-
-  // Monitor image loading
-  images.forEach((img) => {
-    if (img.complete) {
-      updateProgress();
-    } else {
-      img.addEventListener("load", updateProgress);
-      img.addEventListener("error", updateProgress);
-    }
-  });
-
-  // Monitor script loading
-  scripts.forEach((script) => {
-    script.addEventListener("load", updateProgress);
-    script.addEventListener("error", updateProgress);
-  });
-
-  // Monitor stylesheet loading
-  stylesheets.forEach((link) => {
-    link.addEventListener("load", updateProgress);
-    link.addEventListener("error", updateProgress);
-  });
-
-  // Fallback timeout
-  setTimeout(() => {
-    if (document.getElementById("loadingScreen")) {
-      hideLoadingScreen();
-    }
-  }, 10000); // 10 second maximum loading time
-}
-
 // Initialize enhanced loading when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   addLoadingScreenEvents();
-
-  setTimeout(() => {
-    enhancedLoading();
-  }, 500);
 });
