@@ -697,11 +697,12 @@ body {
     text-align: center;
     transition: left 0.3s ease;
     box-shadow: 0 10px 27px var(--shadow);
-    padding: 30px 0;
+    padding: 10px 0;
     height: calc(100vh - 70px);
     overflow-y: auto;
     z-index: 1000;
     border-top: 1px solid var(--border-color);
+    gap: 0;
   }
 
   .nav-menu.active {
@@ -709,12 +710,12 @@ body {
   }
 
   .nav-menu li {
-    margin: 20px 0;
+    margin: 8px 0;
   }
 
   .nav-menu a {
-    font-size: 1.3rem;
-    padding: 15px 30px;
+    font-size: 1.2rem;
+    padding: 12px 30px;
     display: block;
     border-radius: 10px;
     transition: all 0.3s ease;
@@ -733,10 +734,10 @@ body {
 
   .theme-toggle,
   .lang-toggle {
-    margin: 15px 10px;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 25px;
+    margin: 8px 5px;
+    padding: 10px 16px;
+    font-size: 14px;
+    border-radius: 20px;
   }
 
   /* Hero section adjustments */
@@ -865,8 +866,13 @@ body {
   }
 
   .nav-menu a {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin: 0 15px;
+    padding: 10px 25px;
+  }
+
+  .nav-menu li {
+    margin: 6px 0;
   }
 
   .fixed-buttons {
